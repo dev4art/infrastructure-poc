@@ -1,0 +1,40 @@
+version: "3.9"
+volumes:
+    mongodb-data:
+    rabbitmq-data:
+services:
+    MongoDB:
+        image: mongo
+        container_name: mongodb
+        restart: unless-stopped
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongodb-data:/data/db
+
+    RabbitMQ:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        restart: unless-stopped
+#        volumes:
+#            - rabbitmq-data:/var/lib/rabbitmq/
+        ports:
+            - "15672:15672" # communication with the web management API
+        #            - 25672:25672 # (erlang) communication between the nodes and CLI tool
+        environment:
+            - RABBITMQ_DEFAULT_USER:admin
+            - RABBITMQ_DEFAULT_PASS:admin
+
+    gateway:
+        container_name: gateway
+        restart: unless-stopped
+        build:
+            context: ./gateway
+            dockerfile: ./Dockerfile
+        ports:
+            - "3000:3000"
+            - "9229:9229"
+        volumes:
+            - ./gateway/src:/var/www/app/src
+
+
